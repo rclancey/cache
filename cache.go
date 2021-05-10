@@ -60,7 +60,7 @@ func (c *Cache) CacheFunc(f func() ([]byte, error), name string, cacheTime time.
 			return data, nil
 		}
 	}
-	data, err = f()
+	data, err := f()
 	if err != nil {
 		return data, err
 	}
@@ -87,7 +87,7 @@ func (c *Cache) CacheRequest(req *http.Request, cacheTime time.Duration) (*http.
 			return res, nil
 		}
 	}
-	res, err = c.client.Do(req)
+	res, err := c.client.Do(req)
 	if err != nil {
 		return res, err
 	}
@@ -150,7 +150,7 @@ func (c *Cache) CacheFuncJSON(f func(interface{}) error, obj interface{}, name s
 	if err != nil {
 		return err
 	}
-	data, err = json.Marshal(obj)
+	data, err := json.Marshal(obj)
 	if err != nil {
 		return err
 	}
