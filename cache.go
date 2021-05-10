@@ -23,6 +23,7 @@ type CacheFile interface {
 	Read([]byte) (int, error)
 	Write([]byte) (int, error)
 	Close() error
+	Valid() bool
 }
 
 type CacheStore interface {
@@ -53,9 +54,11 @@ func (c *Cache) CacheFunc(f func() ([]byte, error), name string, cacheTime time.
 		return nil, err
 	}
 	defer cf.Close()
-	data, err := ioutil.ReadAll(cf)
-	if err == nil {
-		return data, nil
+	if cf.Valid() {
+		data, err := ioutil.ReadAll(cf)
+		if err == nil {
+			return data, nil
+		}
 	}
 	data, err = f()
 	if err != nil {
@@ -77,10 +80,12 @@ func (c *Cache) CacheRequest(req *http.Request, cacheTime time.Duration) (*http.
 		return nil, err
 	}
 	defer cf.Close()
-	rd := bufio.NewReader(cf)
-	res, err := http.ReadResponse(rd, req)
-	if err == nil {
-		return res, nil
+	if cf.Valid() {
+		rd := bufio.NewReader(cf)
+		res, err := http.ReadResponse(rd, req)
+		if err == nil {
+			return res, nil
+		}
 	}
 	res, err = c.client.Do(req)
 	if err != nil {
@@ -132,11 +137,13 @@ func (c *Cache) CacheFuncJSON(f func(interface{}) error, obj interface{}, name s
 		return err
 	}
 	defer cf.Close()
-	data, err := ioutil.ReadAll(cf)
-	if err == nil {
-		err = json.Unmarshal(data, obj)
+	if cf.Valid() {
+		data, err := ioutil.ReadAll(cf)
 		if err == nil {
-			return nil
+			err = json.Unmarshal(data, obj)
+			if err == nil {
+				return nil
+			}
 		}
 	}
 	err = f(obj)

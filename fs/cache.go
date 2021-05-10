@@ -42,6 +42,10 @@ func (cf *FSCacheFile) Close() error {
 	return cf.f.Close()
 }
 
+func (cf *FSCacheFile) Valid() bool {
+	return !cf.expired
+}
+
 type FSCacheStore struct {
 	root string
 }
