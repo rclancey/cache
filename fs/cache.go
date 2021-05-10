@@ -52,6 +52,10 @@ func NewFSCacheStore(root string) *FSCacheStore {
 
 func (cs *FSCacheStore) Open(cacheFile string, cacheTime time.Duration) (cache.CacheFile, error) {
 	fn := filepath.Join(cs.root, filepath.FromSlash(cacheFile))
+	err := fsutil.EnsureDir(fn)
+	if err != nil {
+		return nil, err
+	}
 	f, err := fsutil.OpenLocked(fn, os.O_RDWR | os.O_CREATE, 0600)
 	if err != nil {
 		return nil, err
