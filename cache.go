@@ -79,7 +79,6 @@ func (c *Cache) CacheRequest(req *http.Request, cacheTime time.Duration) (*http.
 	if err != nil {
 		return nil, err
 	}
-	defer cf.Close()
 	if cf.Valid() {
 		rd := bufio.NewReader(cf)
 		res, err := http.ReadResponse(rd, req)
@@ -87,6 +86,7 @@ func (c *Cache) CacheRequest(req *http.Request, cacheTime time.Duration) (*http.
 			return res, nil
 		}
 	}
+	defer cf.Close()
 	res, err := c.client.Do(req)
 	if err != nil {
 		return res, err
