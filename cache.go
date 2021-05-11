@@ -2,9 +2,11 @@ package cache
 
 import (
 	"bufio"
+	"bytes"
 	"crypto/sha1"
 	"encoding/hex"
 	"encoding/json"
+	"io"
 	"io/ioutil"
 	"net/http"
 	"net/http/httputil"
@@ -79,14 +81,16 @@ func (c *Cache) CacheRequest(req *http.Request, cacheTime time.Duration) (*http.
 	if err != nil {
 		return nil, err
 	}
+	defer cf.Close()
 	if cf.Valid() {
-		rd := bufio.NewReader(cf)
+		buf := bytes.NewBuffer([]byte{})
+		io.Copy(buf, cf)
+		rd := bufio.NewReader(buf)
 		res, err := http.ReadResponse(rd, req)
 		if err == nil {
 			return res, nil
 		}
 	}
-	defer cf.Close()
 	res, err := c.client.Do(req)
 	if err != nil {
 		return res, err
